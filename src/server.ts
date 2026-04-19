@@ -339,8 +339,13 @@ export const atproto = (options: AtprotoPluginOptions) => {
         {
           method: "POST",
           body: v.object({
-            handle: v.pipe(v.string(), v.description("ATProto handle (e.g. user.bsky.social) or DID")),
-            callbackURL: v.optional(v.pipe(v.string(), v.description("URL to redirect to after sign-in"))),
+            handle: v.pipe(
+              v.string(),
+              v.description("ATProto handle (e.g. user.bsky.social) or DID"),
+            ),
+            callbackURL: v.optional(
+              v.pipe(v.string(), v.description("URL to redirect to after sign-in")),
+            ),
           }),
         },
         async (ctx) => {
