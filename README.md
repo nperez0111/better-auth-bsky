@@ -1,6 +1,6 @@
 # better-auth-bsky
 
-A [better-auth](https://better-auth.com) plugin that adds ATProto / Bluesky OAuth 2.1 authentication using [`@atcute/oauth-node-client`](https://npm.im/@atcute/oauth-node-client). Supports DPoP, PAR, and PKCE — the standard way to authenticate ATProto/Bluesky users without app passwords.
+A [better-auth](https://better-auth.com) plugin that adds ATProto / Bluesky OAuth 2.1 authentication using [`@atcute/oauth-node-client`](https://github.com/mary-ext/atcute). Supports DPoP, PAR, and PKCE — the standard way to authenticate ATProto/Bluesky users without app passwords.
 
 ## Installation
 
