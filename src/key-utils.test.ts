@@ -4,6 +4,7 @@ import { extractPublicJwk, generateAtprotoKeypair } from "./key-utils.js";
 describe("key-utils", () => {
   it("generateAtprotoKeypair produces an ES256 private JWK", async () => {
     const jwk = await generateAtprotoKeypair("test-kid");
+    // oxlint-disable-next-line no-unsafe-type-assertion -- inspect opaque JWK type in test
     const raw = jwk as unknown as Record<string, unknown>;
     expect(raw.kty).toBe("EC");
     expect(raw.crv).toBe("P-256");

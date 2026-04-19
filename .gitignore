@@ -7,3 +7,5 @@ coverage
 .env.local
 .vitest-cache
 .turbo
+demo.db
+atproto-key.json

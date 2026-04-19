@@ -12,8 +12,10 @@ function createMockAdapter(): DbAdapter {
   };
 }
 
+// oxlint-disable-next-line no-unsafe-type-assertion -- test DID literal
 const TEST_DID = "did:plc:abc123" as `did:${string}:${string}`;
 
+// oxlint-disable-next-line no-unsafe-type-assertion -- test fixture
 const TEST_SESSION: StoredSession = {
   dpopKey: { kty: "EC", crv: "P-256", x: "x", y: "y", d: "d" },
   tokenSet: {
@@ -113,6 +115,7 @@ describe("DbStateStore", () => {
   let adapter: DbAdapter;
   let store: DbStateStore;
 
+  // oxlint-disable-next-line no-unsafe-type-assertion -- test fixture
   const TEST_STATE: StoredState = {
     dpopKey: { kty: "EC", crv: "P-256", x: "x", y: "y", d: "d" },
     expiresAt: Date.now() + 60_000,

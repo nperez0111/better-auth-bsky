@@ -40,6 +40,7 @@ export class DbSessionStore implements SessionStore {
       where: [{ field: "did", value: did }],
     });
     if (!row) return undefined;
+    // oxlint-disable-next-line no-unsafe-type-assertion -- DB stores serialised JSON we control
     return JSON.parse(row.sessionData) as StoredSession;
   }
 
@@ -104,6 +105,7 @@ export class DbStateStore implements StateStore {
       await this.delete(stateKey);
       return undefined;
     }
+    // oxlint-disable-next-line no-unsafe-type-assertion -- DB stores serialised JSON we control
     return JSON.parse(row.stateData) as StoredState;
   }
 

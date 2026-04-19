@@ -21,6 +21,7 @@ describe("atprotoClient", () => {
     it("returns signIn.atproto action", () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn();
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       expect(actions.signIn).toBeDefined();
@@ -30,15 +31,26 @@ describe("atprotoClient", () => {
     it("returns atproto.getSession action", () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn();
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       expect(actions.atproto).toBeDefined();
       expect(typeof actions.atproto.getSession).toBe("function");
     });
 
+    it("returns atproto.restore action", () => {
+      const plugin = atprotoClient();
+      const mockFetch = vi.fn();
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
+      const actions = plugin.getActions(mockFetch as any);
+
+      expect(typeof actions.atproto.restore).toBe("function");
+    });
+
     it("returns atproto.signOut action", () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn();
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       expect(typeof actions.atproto.signOut).toBe("function");
@@ -47,6 +59,7 @@ describe("atprotoClient", () => {
     it("signIn.atproto calls $fetch with correct path and method", async () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn().mockResolvedValue({ url: "https://bsky.social/auth" });
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       await actions.signIn.atproto({
@@ -63,6 +76,7 @@ describe("atprotoClient", () => {
     it("signIn.atproto works without callbackURL", async () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn().mockResolvedValue({ url: "https://bsky.social/auth" });
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       await actions.signIn.atproto({ handle: "user.bsky.social" });
@@ -80,6 +94,7 @@ describe("atprotoClient", () => {
         handle: "user.bsky.social",
         pdsUrl: "https://bsky.network",
       });
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       await actions.atproto.getSession();
@@ -89,9 +104,23 @@ describe("atprotoClient", () => {
       });
     });
 
+    it("atproto.restore calls $fetch with correct path and method", async () => {
+      const plugin = atprotoClient();
+      const mockFetch = vi.fn().mockResolvedValue({ active: true });
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
+      const actions = plugin.getActions(mockFetch as any);
+
+      await actions.atproto.restore();
+
+      expect(mockFetch).toHaveBeenCalledWith("/atproto/restore", {
+        method: "POST",
+      });
+    });
+
     it("atproto.signOut calls $fetch with correct path and method", async () => {
       const plugin = atprotoClient();
       const mockFetch = vi.fn().mockResolvedValue({ success: true });
+      // oxlint-disable-next-line no-unsafe-type-assertion -- test mock
       const actions = plugin.getActions(mockFetch as any);
 
       await actions.atproto.signOut();

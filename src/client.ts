@@ -4,6 +4,7 @@ import type { atproto } from "./server.js";
 export const atprotoClient = () =>
   ({
     id: "atproto",
+    // oxlint-disable-next-line no-unsafe-type-assertion -- required by better-auth plugin inference
     $InferServerPlugin: {} as ReturnType<typeof atproto>,
     getActions: ($fetch) => ({
       signIn: {
@@ -16,6 +17,7 @@ export const atprotoClient = () =>
       },
       atproto: {
         getSession: async () => $fetch("/atproto/session", { method: "GET" }),
+        restore: async () => $fetch("/atproto/restore", { method: "POST" }),
         signOut: async () => $fetch("/atproto/sign-out", { method: "POST" }),
       },
     }),

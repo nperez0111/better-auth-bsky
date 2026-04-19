@@ -63,8 +63,9 @@ atproto({
   tosUri: "https://myapp.com/tos",
   policyUri: "https://myapp.com/privacy",
 
-  // Optional — OAuth scopes (default: "atproto transition:generic")
-  scope: "atproto transition:generic",
+  // Optional — OAuth scopes (default: "atproto")
+  // Accepts a string or array of scope strings (e.g. from @atcute/oauth-types scope builders)
+  scope: "atproto",
 
   // Optional — private keys for confidential client mode
   // If omitted, runs as a public client (shorter token lifetime)
