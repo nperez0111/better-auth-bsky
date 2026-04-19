@@ -55,14 +55,15 @@
     "dev": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsgo --noEmit",
+    "typecheck": "oxlint --fix --type-aware --type-check",
     "lint": "oxlint --type-aware --type-check",
     "fmt": "oxfmt .",
     "fmt:check": "oxfmt --check .",
     "check": "oxlint --type-aware --type-check && oxfmt --check .",
     "demo": "bun run --watch demo/server.ts",
     "demo:local": "LOCAL=1 bun run --watch demo/server.ts",
-    "prepublishOnly": "bun run check && bun run test && bun run build"
+    "prepublishOnly": "bun run check && bun run test && bun run build",
+    "release": "bun run build && bumpp"
   },
   "dependencies": {
     "@atcute/identity-resolver": "^1.0.0",
@@ -74,6 +75,7 @@
     "@types/bun": "latest",
     "@typescript/native-preview": "7.0.0-dev.20260419.1",
     "better-auth": "^1.5.6",
+    "bumpp": "11.0.1",
     "hono": "4.12.14",
     "oxfmt": "0.42.0",
     "oxlint": "1.57.0",
