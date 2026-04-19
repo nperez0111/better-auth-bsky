@@ -201,24 +201,24 @@ The plugin extends the `user` table and adds two new tables via better-auth's mi
 
 ### `better-auth-bsky` (main)
 
-| Export                       | Type     | Description                                      |
-| ---------------------------- | -------- | ------------------------------------------------ |
-| `atproto`                    | function | Server plugin factory                            |
-| `atprotoClient`              | function | Client plugin factory                            |
-| `generateAtprotoKeypair`     | function | Generate ES256 keypair for confidential mode     |
-| `extractPublicJwk`           | function | Extract public JWK from a private JWK            |
-| `fetchAtprotoProfilePublic`  | function | Fetch a profile via the Bluesky public API       |
-| `atprotoPlaceholderEmail`    | function | Generate deterministic placeholder email from DID |
-| `DbSessionStore`             | class    | Database-backed OAuth session store              |
-| `DbStateStore`               | class    | Database-backed OAuth state store                |
-| `atprotoSchema`              | object   | Database schema definition for migrations        |
-| `AtprotoPluginOptions`       | type     | Plugin configuration options                     |
-| `AtprotoProfile`             | type     | Profile data shape from ATProto                  |
+| Export                      | Type     | Description                                       |
+| --------------------------- | -------- | ------------------------------------------------- |
+| `atproto`                   | function | Server plugin factory                             |
+| `atprotoClient`             | function | Client plugin factory                             |
+| `generateAtprotoKeypair`    | function | Generate ES256 keypair for confidential mode      |
+| `extractPublicJwk`          | function | Extract public JWK from a private JWK             |
+| `fetchAtprotoProfilePublic` | function | Fetch a profile via the Bluesky public API        |
+| `atprotoPlaceholderEmail`   | function | Generate deterministic placeholder email from DID |
+| `DbSessionStore`            | class    | Database-backed OAuth session store               |
+| `DbStateStore`              | class    | Database-backed OAuth state store                 |
+| `atprotoSchema`             | object   | Database schema definition for migrations         |
+| `AtprotoPluginOptions`      | type     | Plugin configuration options                      |
+| `AtprotoProfile`            | type     | Profile data shape from ATProto                   |
 
 ### `better-auth-bsky/client`
 
-| Export          | Type     | Description          |
-| --------------- | -------- | -------------------- |
+| Export          | Type     | Description           |
+| --------------- | -------- | --------------------- |
 | `atprotoClient` | function | Client plugin factory |
 
 ## Development
