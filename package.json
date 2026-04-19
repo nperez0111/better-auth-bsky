@@ -1,6 +1,6 @@
 {
   "name": "better-auth-bsky",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A better-auth plugin that adds ATProto/Bluesky OAuth 2.1 authentication (DPoP, PAR, PKCE) via @atcute/oauth-node-client.",
   "keywords": [
     "atproto",
