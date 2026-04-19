@@ -16,7 +16,7 @@ import { Client } from "@atcute/client";
 import type { BetterAuthPlugin } from "better-auth";
 import { createAuthEndpoint, APIError } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
-import * as z from "zod";
+import * as v from "valibot";
 
 import { isDid } from "@atcute/lexicons/syntax";
 import type { Did } from "@atcute/lexicons";
@@ -29,8 +29,8 @@ import { DbSessionStore, DbStateStore } from "./stores.js";
 
 /** Safely extract a string field from an unknown record. */
 function getString(data: Record<string, unknown>, key: string): string | undefined {
-  const v = data[key];
-  return typeof v === "string" ? v : undefined;
+  const val = data[key];
+  return typeof val === "string" ? val : undefined;
 }
 
 /** Parse a JSON response body into a plain record. */
@@ -338,9 +338,9 @@ export const atproto = (options: AtprotoPluginOptions) => {
         signInPath,
         {
           method: "POST",
-          body: z.object({
-            handle: z.string().describe("ATProto handle (e.g. user.bsky.social) or DID"),
-            callbackURL: z.string().describe("URL to redirect to after sign-in").optional(),
+          body: v.object({
+            handle: v.pipe(v.string(), v.description("ATProto handle (e.g. user.bsky.social) or DID")),
+            callbackURL: v.optional(v.pipe(v.string(), v.description("URL to redirect to after sign-in"))),
           }),
         },
         async (ctx) => {
@@ -378,12 +378,12 @@ export const atproto = (options: AtprotoPluginOptions) => {
         callbackPath,
         {
           method: "GET",
-          query: z.object({
-            code: z.string().optional(),
-            state: z.string().optional(),
-            iss: z.string().optional(),
-            error: z.string().optional(),
-            error_description: z.string().optional(),
+          query: v.object({
+            code: v.optional(v.string()),
+            state: v.optional(v.string()),
+            iss: v.optional(v.string()),
+            error: v.optional(v.string()),
+            error_description: v.optional(v.string()),
           }),
         },
         async (ctx) => {
@@ -701,9 +701,9 @@ export const atproto = (options: AtprotoPluginOptions) => {
       getAtprotoClient: createAuthEndpoint(
         {
           method: "POST",
-          body: z.object({
-            did: z.string().optional(),
-            userId: z.string().optional(),
+          body: v.object({
+            did: v.optional(v.string()),
+            userId: v.optional(v.string()),
           }),
           metadata: { SERVER_ONLY: true as const },
         },
