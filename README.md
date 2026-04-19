@@ -36,17 +36,20 @@ const client = createAuthClient({
   plugins: [atprotoClient()],
 });
 
-// Sign in
+// Sign in — returns { url, redirect: true }
 const { data } = await client.signIn.atproto({
   handle: "user.bsky.social",
   callbackURL: "/dashboard",
 });
 window.location.href = data.url;
 
-// Check session
+// Check ATProto session
 const session = await client.atproto.getSession();
 
-// Sign out
+// Restore ATProto session (lightweight token refresh check)
+const status = await client.atproto.restore();
+
+// Sign out (revokes ATProto OAuth session)
 await client.atproto.signOut();
 ```
 
@@ -65,11 +68,22 @@ atproto({
 
   // Optional — OAuth scopes (default: "atproto")
   // Accepts a string or array of scope strings (e.g. from @atcute/oauth-types scope builders)
+  // The base "atproto" scope is always included automatically
   scope: "atproto",
 
   // Optional — private keys for confidential client mode
   // If omitted, runs as a public client (shorter token lifetime)
   keyset: [privateJwk],
+
+  // Optional — block new user creation (existing users can still sign in)
+  disableSignUp: false,
+
+  // Optional — custom profile-to-user field mapping
+  // Called during sign-in to populate user name, email, and image
+  mapProfileToUser: (profile) => ({
+    name: profile.displayName || profile.handle,
+    image: profile.avatar,
+  }),
 
   // Optional — override endpoint paths
   clientMetadataPath: "/oauth-client-metadata.json", // default
@@ -104,18 +118,42 @@ const privateJwk = await generateAtprotoKeypair();
 
 All paths are relative to better-auth's `basePath`.
 
-| Method | Path                          | Purpose                                                |
-| ------ | ----------------------------- | ------------------------------------------------------ |
-| GET    | `/oauth-client-metadata.json` | OAuth client metadata document                         |
-| GET    | `/.well-known/jwks.json`      | Public JWKS (confidential mode only)                   |
-| POST   | `/sign-in/atproto`            | Start OAuth flow (`{ handle, callbackURL? }`)          |
-| GET    | `/atproto/callback`           | OAuth callback (handles code exchange + user creation) |
-| GET    | `/atproto/session`            | Current user's ATProto info (DID, handle, PDS)         |
-| POST   | `/atproto/sign-out`           | Revoke ATProto OAuth session                           |
+| Method | Path                          | Purpose                                                       |
+| ------ | ----------------------------- | ------------------------------------------------------------- |
+| GET    | `/oauth-client-metadata.json` | OAuth client metadata document                                |
+| GET    | `/.well-known/jwks.json`      | Public JWKS (confidential mode only)                          |
+| POST   | `/sign-in/atproto`            | Start OAuth flow (`{ handle, callbackURL? }`)                 |
+| GET    | `/atproto/callback`           | OAuth callback (code exchange, profile sync, user management) |
+| GET    | `/atproto/session`            | Current user's ATProto info (DID, handle, PDS)                |
+| POST   | `/atproto/restore`            | Lightweight session check with token refresh                  |
+| POST   | `/atproto/sign-out`           | Revoke ATProto OAuth session                                  |
+
+Additionally, `getAtprotoClient` is a server-only endpoint (not exposed over HTTP). It returns an authenticated `@atcute/client` `Client` and `OAuthSession` for making XRPC calls on behalf of a user:
+
+```typescript
+const { client, session } = await auth.api.getAtprotoClient({
+  body: { did: "did:plc:abc123" },
+  // or: { userId: "user-id" }
+});
+```
+
+### Rate Limiting
+
+The plugin applies rate limits to sensitive endpoints:
+
+- `/sign-in/atproto`: 5 requests per 60 seconds
+- `/atproto/callback`: 10 requests per 60 seconds
 
 ## Database Schema
 
-The plugin adds two tables via better-auth's migration system:
+The plugin extends the `user` table and adds two new tables via better-auth's migration system.
+
+**`user` table extensions:**
+
+| Column          | Type   | Notes                            |
+| --------------- | ------ | -------------------------------- |
+| `atprotoDid`    | string | Unique, the user's permanent DID |
+| `atprotoHandle` | string | Current ATProto handle           |
 
 **`atprotoSession`** — persists OAuth sessions for `@atcute/oauth-node-client`:
 
@@ -124,7 +162,7 @@ The plugin adds two tables via better-auth's migration system:
 | `id`          | string | PK                                        |
 | `did`         | string | Unique, the user's DID                    |
 | `sessionData` | string | JSON blob (DPoP key, tokens, auth method) |
-| `userId`      | string | FK to `user.id`                           |
+| `userId`      | string | FK to `user.id` (cascade delete)          |
 | `handle`      | string | ATProto handle (can change)               |
 | `pdsUrl`      | string | User's PDS endpoint                       |
 | `updatedAt`   | date   |                                           |
@@ -144,17 +182,44 @@ The plugin adds two tables via better-auth's migration system:
 
 2. **Authorization**: User authorizes at their PDS authorization server (e.g. bsky.social).
 
-3. **Callback**: PDS redirects back to `/atproto/callback`. The plugin exchanges the code for tokens (with DPoP proof), creates or finds a user/account in better-auth, persists the ATProto session, creates a better-auth session cookie, and redirects to the `callbackURL`.
+3. **Callback**: PDS redirects back to `/atproto/callback`. The plugin exchanges the code for tokens (with DPoP proof), fetches the user's profile (display name, avatar, etc.), then either finds an existing user, links to a currently-logged-in user, or creates a new user. Profile fields are synced to the user record, the ATProto session is persisted, a better-auth session cookie is set, and the user is redirected to the `callbackURL`.
 
-4. **Session restoration**: On server restart, `oauthClient.restore(did)` rehydrates sessions from the database and handles token refresh automatically.
+4. **Account linking**: If a user is already signed in via another method and completes the ATProto OAuth flow, their ATProto account is linked to their existing user. This respects better-auth's `account.accountLinking.enabled` configuration.
 
-5. **Authenticated API calls**: Retrieve the `OAuthSession` via `oauthClient.restore(did)` and use it as a fetch handler for `@atcute/client`.
+5. **Session restoration**: On server restart, `oauthClient.restore(did)` rehydrates sessions from the database and handles token refresh automatically. The `/atproto/restore` endpoint exposes this to the client.
+
+6. **Authenticated API calls**: Use `auth.api.getAtprotoClient({ body: { did } })` server-side to get an authenticated `@atcute/client` `Client` for making XRPC calls on behalf of a user.
 
 ## Identity Mapping
 
-- DID is the permanent identifier, mapped via `account.providerId = "atproto"`, `account.accountId = did`
-- Email uses `{did}@atproto.invalid` (RFC 2606 reserved TLD — same pattern as better-auth's phone/anonymous plugins)
-- Handle is tracked in `atprotoSession.handle` but may change over time
+- **DID** is the permanent identifier, stored as `account.accountId` with `account.providerId = "atproto"`, and on the user record as `atprotoDid`
+- **Email** uses a deterministic placeholder: `{did}@atproto.invalid` (RFC 2606 reserved TLD). Override via `mapProfileToUser` if you have access to the user's email
+- **Handle** is tracked on both `atprotoSession.handle` and `user.atprotoHandle`, and updated on each sign-in
+- **Profile** data (display name, avatar, banner, bio) is fetched on sign-in and mapped to user fields via `mapProfileToUser`
+
+## Exports
+
+### `better-auth-bsky` (main)
+
+| Export                       | Type     | Description                                      |
+| ---------------------------- | -------- | ------------------------------------------------ |
+| `atproto`                    | function | Server plugin factory                            |
+| `atprotoClient`              | function | Client plugin factory                            |
+| `generateAtprotoKeypair`     | function | Generate ES256 keypair for confidential mode     |
+| `extractPublicJwk`           | function | Extract public JWK from a private JWK            |
+| `fetchAtprotoProfilePublic`  | function | Fetch a profile via the Bluesky public API       |
+| `atprotoPlaceholderEmail`    | function | Generate deterministic placeholder email from DID |
+| `DbSessionStore`             | class    | Database-backed OAuth session store              |
+| `DbStateStore`               | class    | Database-backed OAuth state store                |
+| `atprotoSchema`              | object   | Database schema definition for migrations        |
+| `AtprotoPluginOptions`       | type     | Plugin configuration options                     |
+| `AtprotoProfile`             | type     | Profile data shape from ATProto                  |
+
+### `better-auth-bsky/client`
+
+| Export          | Type     | Description          |
+| --------------- | -------- | -------------------- |
+| `atprotoClient` | function | Client plugin factory |
 
 ## Development
 
@@ -164,6 +229,8 @@ bun run build       # build with tsdown
 bun run test        # vitest run
 bun run test:watch  # vitest watch
 bun run check       # lint + typecheck + fmt check
+bun run demo        # interactive demo with Cloudflare tunnel
+bun run demo:local  # demo on localhost only (no tunnel)
 ```
 
 ## License
