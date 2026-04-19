@@ -1,0 +1,14 @@
+node_modules
+coverage
+.vitest-cache
+.turbo
+*.log
+.env
+.env.local
+src/**/*.test.ts
+src/tests
+vitest.config.ts
+tsdown.config.ts
+.oxlintrc.json
+.gitattributes
+.github
