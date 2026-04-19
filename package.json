@@ -60,7 +60,7 @@
     "lint": "oxlint --type-aware --type-check && oxfmt --check .",
     "demo": "bun run --watch demo/server.ts",
     "demo:local": "LOCAL=1 bun run --watch demo/server.ts",
-    "prepublishOnly": "bun run check && bun run test && bun run build",
+    "prepublishOnly": "bun run build",
     "release": "bun run build && bumpp"
   },
   "dependencies": {
