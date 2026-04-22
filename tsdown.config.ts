@@ -8,8 +8,8 @@ export default defineConfig({
   sourcemap: true,
   target: "es2022",
   platform: "neutral",
-  external: ["better-auth", "better-auth/api", "better-auth/client", "better-auth/cookies"],
   deps: {
+    neverBundle: [/^better-auth/, /^better-call/, /^@better-fetch\//, /^@atcute\//],
     onlyBundle: ["valibot"],
   },
 });
