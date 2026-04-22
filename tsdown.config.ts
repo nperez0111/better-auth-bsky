@@ -9,4 +9,7 @@ export default defineConfig({
   target: "es2022",
   platform: "neutral",
   external: ["better-auth", "better-auth/api", "better-auth/client", "better-auth/cookies"],
+  deps: {
+    onlyBundle: ["valibot"],
+  },
 });
