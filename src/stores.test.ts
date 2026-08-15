@@ -68,7 +68,7 @@ describe("DbSessionStore", () => {
         data: expect.objectContaining({
           did: TEST_DID,
           sessionData: JSON.stringify(TEST_SESSION),
-          userId: "",
+          userId: null,
           handle: "",
           pdsUrl: "",
         }),
@@ -149,6 +149,32 @@ describe("DbStateStore", () => {
       expect(result).toEqual(futureState);
     });
 
+    it("returns parsed state when expiresAt is a Date (not expired)", async () => {
+      const futureState = { ...TEST_STATE, expiresAt: Date.now() + 60_000 };
+      vi.mocked(adapter.findOne).mockResolvedValueOnce({
+        stateData: JSON.stringify(futureState),
+        expiresAt: new Date(futureState.expiresAt),
+      });
+
+      const result = await store.get("test-key");
+      expect(result).toEqual(futureState);
+    });
+
+    it("returns undefined and cleans up when expiresAt is an expired Date", async () => {
+      const expiredState = { ...TEST_STATE, expiresAt: Date.now() - 1000 };
+      vi.mocked(adapter.findOne).mockResolvedValueOnce({
+        stateData: JSON.stringify(expiredState),
+        expiresAt: new Date(expiredState.expiresAt),
+      });
+
+      const result = await store.get("test-key");
+      expect(result).toBeUndefined();
+      expect(adapter.delete).toHaveBeenCalledWith({
+        model: "atprotoState",
+        where: [{ field: "stateKey", value: "test-key" }],
+      });
+    });
+
     it("returns undefined and cleans up when state is expired", async () => {
       const expiredState = { ...TEST_STATE, expiresAt: Date.now() - 1000 };
       vi.mocked(adapter.findOne).mockResolvedValueOnce({
@@ -173,7 +199,7 @@ describe("DbStateStore", () => {
         data: {
           stateKey: "test-key",
           stateData: JSON.stringify(TEST_STATE),
-          expiresAt: TEST_STATE.expiresAt,
+          expiresAt: new Date(TEST_STATE.expiresAt),
         },
       });
     });

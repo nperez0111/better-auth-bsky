@@ -162,7 +162,7 @@ The plugin extends the `user` table and adds two new tables via better-auth's mi
 | `id`          | string | PK                                        |
 | `did`         | string | Unique, the user's DID                    |
 | `sessionData` | string | JSON blob (DPoP key, tokens, auth method) |
-| `userId`      | string | FK to `user.id` (cascade delete)          |
+| `userId`      | string | Nullable FK to `user.id` (cascade delete) |
 | `handle`      | string | ATProto handle (can change)               |
 | `pdsUrl`      | string | User's PDS endpoint                       |
 | `updatedAt`   | date   |                                           |
@@ -174,7 +174,7 @@ The plugin extends the `user` table and adds two new tables via better-auth's mi
 | `id`        | string | PK                                          |
 | `stateKey`  | string | Unique, the OAuth state parameter           |
 | `stateData` | string | JSON blob (DPoP key, PKCE verifier, issuer) |
-| `expiresAt` | number | Unix timestamp                              |
+| `expiresAt` | date   | Expiry timestamp                            |
 
 ## How it Works
 

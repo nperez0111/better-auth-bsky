@@ -30,9 +30,9 @@ describe("atprotoSchema", () => {
       });
     });
 
-    it("has a required 'userId' field that references the user table", () => {
+    it("has an optional 'userId' field that references the user table", () => {
       expect(fields.userId.type).toBe("string");
-      expect(fields.userId.required).toBe(true);
+      expect(fields.userId.required).toBe(false);
       expect(fields.userId.references).toEqual({
         model: "user",
         field: "id",
@@ -80,9 +80,9 @@ describe("atprotoSchema", () => {
       });
     });
 
-    it("has a required 'expiresAt' field of type number", () => {
+    it("has a required 'expiresAt' field of type date", () => {
       expect(fields.expiresAt).toEqual({
-        type: "number",
+        type: "date",
         required: true,
       });
     });

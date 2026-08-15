@@ -62,7 +62,7 @@ export class DbSessionStore implements SessionStore {
         data: {
           did,
           sessionData: data,
-          userId: "",
+          userId: null,
           handle: "",
           pdsUrl: "",
           updatedAt: new Date(),
@@ -94,13 +94,14 @@ export class DbStateStore implements StateStore {
   async get(stateKey: string): Promise<StoredState | undefined> {
     const row = await this.adapter.findOne<{
       stateData: string;
-      expiresAt: number;
+      expiresAt: Date | number;
     }>({
       model: "atprotoState",
       where: [{ field: "stateKey", value: stateKey }],
     });
     if (!row) return undefined;
-    if (row.expiresAt < Date.now()) {
+    const expiresAtMs = row.expiresAt instanceof Date ? row.expiresAt.getTime() : row.expiresAt;
+    if (expiresAtMs < Date.now()) {
       // Expired — clean it up
       await this.delete(stateKey);
       return undefined;
@@ -116,7 +117,7 @@ export class DbStateStore implements StateStore {
       data: {
         stateKey,
         stateData: data,
-        expiresAt: state.expiresAt,
+        expiresAt: new Date(state.expiresAt),
       },
     });
   }
