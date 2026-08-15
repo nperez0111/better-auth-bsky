@@ -92,7 +92,7 @@ export const atprotoSchema = {
       sessionData: { type: "string" as const, required: true },
       userId: {
         type: "string" as const,
-        required: true,
+        required: false,
         references: { model: "user", field: "id", onDelete: "cascade" as const },
       },
       handle: { type: "string" as const, required: true },
@@ -104,7 +104,7 @@ export const atprotoSchema = {
     fields: {
       stateKey: { type: "string" as const, unique: true, required: true },
       stateData: { type: "string" as const, required: true },
-      expiresAt: { type: "number" as const, required: true },
+      expiresAt: { type: "date" as const, required: true },
     },
   },
 } as const;
